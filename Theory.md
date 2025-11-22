@@ -12,9 +12,14 @@ This document outlines the theoretical and practical implementation of TAR-Q (Ta
 To visualize targets accurately on a 3D geoid surface, TAR-Q employs spherical trigonometry rather than simple Euclidean geometry.
 2.1. Haversine Formula for Geodesic Distance
 To calculate the precise distance (d) between the receiver (client) and the target aircraft for interpolation, we utilize the Haversine law:
+
+a = \sin^2\left(\frac{\Delta\phi}{2}\right) + \cos \phi_1 \cdot \cos \phi_2 \cdot \sin^2\left(\frac{\Delta\lambda}{2}\right)
+
 Where:
  * \phi is latitude, \lambda is longitude (in radians).
  * R is the Earth's radius (6,371 km).
+
+ * 
 2.2. Motion Interpolation (The "Fox" Algorithm)
 To solve the "stuttering" issue of discrete data packets, we implemented a Linear Interpolation (LERP) algorithm for smooth rendering in the DOM update cycle:
 Where t is the current timestamp, and \Delta t is the data refresh interval.
