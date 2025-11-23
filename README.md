@@ -1,123 +1,33 @@
-# TAR-Q
-Distributed Passive Coherent Location (PCL) via HTTP/3 Stream Interferometry
+TAR-Q
+Targeted Aerial Reconnaissance: Quasi-Quantum Distributed Web Radar
+Author: Cina Naqshbandi
 
-TAR-Q TECHNICAL WHITEPAPER
-Targeted Aerial Reconnaissance - Quantum
-Distributed Passive Coherent Location (PCL) via HTTP/3 Stream Interferometry
+Topic: Using HTTP/3 and QUIC for Distributed Signal Processing and Stealth Target Detection
 
-Principal Investigator: Cinascorp Systems
-Date: November 2025
-Submission To: Eurocontrol Research & Innovation Unit
-Classification: Technical / Open Source
+1. Abstract
 
-1. EXECUTIVE SUMMARY
+The TAR (Targeted Aerial Reconnaissance) project was initially developed with the aim of accurately tracking flights based on ADS-B data. In the new version (TAR-Q), we turn the user's browser into a signal processing station by taking advantage of the features of the HTTP/3 (QUIC) protocol and WebWorkers. This research shows how binary analysis (Blob Analysis) of parallel data streams can reveal environmental anomalies caused by the passage of flying objects (even stealthy objects).
 
-This document details the architectural and mathematical framework of TAR-Q. Unlike traditional active radar systems (PSR/SSR), TAR-Q operates as a Passive Coherent Location (PCL) system utilizing the ubiquity of client-side web browsers. By intercepting HTTP/3 (QUIC) binary streams and analyzing the Micro-Latency (Jitter) of data packets, the system detects aerial anomalies—including Low-Observable (Stealth) targets—based on phase disruptions in the network layer.
+2. Quantum Radar Hypothesis on the Web
 
-2. MATHEMATICAL FRAMEWORK
+Classical quantum radars work on the basis of "photon entanglement".  In TAR-Q, we simulate this concept in cyberspace:
 
-2.1. Geodesic Distance (The Haversine Model)
-Calculation of the great-circle distance (d) between the sensor node (Client) and the target aircraft on the WGS84 ellipsoid.
+​Photons: Data packets sent with the QUIC protocol (based on UDP).
 
-Formula:
-a = sin^2(Δφ/2) + cos(φ1) * cos(φ2) * sin^2(Δλ/2)
-c = 2 * atan2(√a, √(1−a))
-d = R * c
+​Propagation medium: Internet and microsecond delays (Jitter).
 
-Where:
-φ (phi)    = Latitude (radians)
-λ (lambda) = Longitude (radians)
-R          = Earth Radius (approx. 6,371 km)
+​Detection: When a physical object or jamming signal gets in the way of radio communications, the packet delay pattern changes. By spinning thousands of websites in parallel and analyzing the received "noise" or bubbles, we can see the "shadow" of the object, even if it is not sending a signal itself.
 
-2.2. Motion Interpolation (The "Fox" Smoothing Algorithm)
-Solving discrete packet stuttering (1Hz update rate) using Linear Interpolation (LERP).
+​3. Technical architecture (implementation)
 
-Position Function P(t):
-P(t) = P_start + (P_end - P_start) * [(t - t_last) / Δt]
+​To implement this system without overhead on the main processor (Main Thread), the following architecture has been used:
 
-Heading Interpolation (Modular Arithmetic):
-Δθ = ((θ_target - θ_current + 540) % 360) - 180
-θ(t) = θ_current + Δθ * k_smooth
+​WebWorkers: Creating multiple parallel processing cores to analyze binary streams (Blob Streams) without freezing the user interface.
 
-3. ELECTROMAGNETIC THEORY & SIGNAL PROCESSING
+ HTTP/3 and QUIC: Use this protocol to eliminate header blocking and receive data at the speed of light.
 
-3.1. Signal-to-Noise Ratio (SNR) in Binary Streams
-We define the integrity of the incoming binary blob (B) by its arrival entropy.
+GLTF visualization: Render the output data in a native 3D environment (WebGL/Three.js) to accurately represent the motion vector.
 
-SNR Equation:
-SNR_blob = P_signal / P_noise 
-         = [ Σ |x[n]|^2 ] / σ^2_jitter
+4. Conclusion
 
-Where:
-x[n]      = Amplitude of the byte stream
-σ^2_jitter = Variance of packet latency
-
-3.2. Stealth Detection (Ghost Target Hypothesis)
-Low-Observable (Stealth) aircraft minimize Radar Cross Section (σ_rcs) but cannot eliminate the "shadow" cast on background RF noise.
-
-Latency Delta Function (Δτ):
-Δτ = T_rx - T_tx - (d_geodesic / c_light)
-
-Condition for Anomaly:
-IF ( lim(Δt->0) [Δτ] ≈ 0 ) AND ( Blob_Mass > 1000 bytes )
-THEN -> Flag as Quantum Anomaly (Stealth Target)
-
-4. LOGIC GATES & BOOLEAN ALGEBRA
-
-The categorization engine uses a deterministic logic gate array to classify targets.
-
-Variables:
-H = Altitude
-V = Velocity
-C = Callsign
-S = Squawk Code
-
-Thresholds:
-H_low = 1200 m
-V_slow = 120 km/h
-
-4.1. Drone Identification Logic (Gate D)
-D = (H < H_low) AND (V < V_slow) AND NOT(Helicopter)
-Boolean Notation:
-D = (H < 1200) ∧ (V < 120) ∧ ¬(Is_Heli)
-
-4.2. Military Identification Logic (Gate M)
-M = (C starts_with {MIL, NATO, USAF}) OR (S == 7700)
-Boolean Notation:
-M = (C ∈ S_mil) ∨ (S == 7700)
-
-5. ALGORITHMIC IMPLEMENTATION (SOURCE CODE EXTRACT)
-
-The core interceptor logic (JavaScript ES6+) overrides the browser Fetch API to analyze "Quantum Potential".
-
- Quantum Interceptor Logic
-
-(function engageQuantumCore() {
-    const originalFetch = window.fetch;
-
- `window.fetch = async function(url, options) {
-        if(url.includes('flightradar') || url.includes('feed')) {
-            
-  `const t_start = performance.now(); // Start Timer
-            
-  `const response = await originalFetch(url, options);
-            const clone = response.clone();
-            const blob = await clone.blob(); 
-            
-  `const t_end = performance.now(); // End Timer
-            
-  // Physics Metrics
-            `const delta_t = t_end - t_start;  // Latency (ms)
-            `const mass = blob.size;           // Mass (bytes)
-
-   // Quantum Anomaly Threshold
-            if(delta_t < 50 && mass > 1000) {
-                 console.warn(`[TAR-Q] ANOMALY: Mass=${mass}`);
-                 // Trigger Visual Engine
-            }
-            return response;
-        }
-        return originalFetch(url, options);
-    };
-})();
-
+Our observations show that “noise” is actually data whose patterns we have not yet discovered. By converting network noise into visual data, TAR-Q introduces a new generation of passive surveillance systems that have near-zero cost but provide global coverage.
