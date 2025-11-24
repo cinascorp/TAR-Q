@@ -1,6 +1,6 @@
 # TAR-Q
 ## www.cinascorp.com/tarq
-###Distributed Passive Coherent Location (PCL) via HTTP/3 Stream Interferometry
+### Distributed Passive Coherent Location (PCL) via HTTP/3 Stream Interferometry
 Project Documentation & Theoretical Framework
 Principal Investigator: Cinascorp
 Date: November 2025
