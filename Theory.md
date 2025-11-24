@@ -6,89 +6,86 @@ Principal Investigator: Cinascorp
 Date: November 2025
 Subject: Implementation of Browser-Based Quantum-Like Radar Systems
 
-1. Abstract
-This document outlines the theoretical and practical implementation of TAR-Q (Targeted Aerial Reconnaissance - Quantum). Unlike active radar systems that emit high-power electromagnetic waves, TAR-Q operates as a Passive Coherent Location (PCL) system. By leveraging the ubiquity of global web traffic and the HTTP/3 (QUIC) protocol, the system turns a client-side browser into a distributed sensor. The core innovation lies in analyzing the Micro-Latency (Jitter) and Binary Blob Integrity of data streams to detect aerial anomalies—including Low-Observable (Stealth) targets—before standard ADS-B decoding occurs.
-2. Mathematical Framework & Geodesic Calculations
-To visualize targets accurately on a 3D geoid surface, TAR-Q employs spherical trigonometry rather than simple Euclidean geometry.
-2.1. Haversine Formula for Geodesic Distance
-To calculate the precise distance (d) between the receiver (client) and the target aircraft for interpolation, we utilize the Haversine law:
+این یک ایده پروژه پیچیده است که فیزیک محاسباتی، مهندسی الکترومغناطیسی و شبیه‌سازی موتور بازی را به هم پیوند می‌دهد.
 
-a = \sin^2\left(\frac{\Delta\phi}{2}\right) + \cos \phi_1 \cdot \cos \phi_2 \cdot \sin^2\left(\frac{\Delta\lambda}{2}\right)
+ایجاد یک محیط شبیه‌سازی شده سه‌بعدی برای آزمایش رادار کوانتومی (به‌طور خاص روشنایی کوانتومی) در برابر فناوری Stealth، نیازمند شبیه‌سازی نحوه رفتار فوتون‌های درهم‌تنیده هنگام برخورد با اشیایی است که برای شکست دادن رادار کلاسیک طراحی شده‌اند.
 
-Where:
- * \phi is latitude, \lambda is longitude (in radians).
- * R is the Earth's radius (6,371 km).
+در اینجا، تجزیه و تحلیل ساختاری نحوه طراحی این شبیه‌سازی، فیزیک مربوطه و معماری نرم‌افزار مورد نیاز ارائه شده است.
 
- * 
-2.2. Motion Interpolation (The "Fox" Algorithm)
-To solve the "stuttering" issue of discrete data packets, we implemented a Linear Interpolation (LERP) algorithm for smooth rendering in the DOM update cycle:
-Where t is the current timestamp, and \Delta t is the data refresh interval.
-3. Electromagnetic Theory: Network Jitter as a Sensor
-The core hypothesis of TAR-Q is that physical objects moving through the RF spectrum create disturbances in the Electromagnetic Field (EMF), which manifests as "Quantum Noise" in digital packet transmission.
-3.1. Signal-to-Noise Ratio (SNR) in Binary Streams
-We treat the incoming fetch response not as a file, but as a signal wave. The integrity of the Blob stream (S_{blob}) is defined as:
-Where:
- * B_i represents the byte stream amplitude.
- * \sigma^2_{jitter} is the variance of the packet arrival time (Latency Jitter).
-3.2. Stealth Detection Logic
-Low-Observable aircraft minimize their Radar Cross Section (RCS) (\sigma). However, they cannot eliminate their "shadow" on the background communication noise. We detect this via the Latency Delta Function:
-If \Delta \tau exhibits a non-random pattern (Entropy decrease) while the Blob size remains constant, the system flags a "Ghost Target" (Stealth Anomaly).
-4. Logic Circuits & Algorithmic State Machine
-The TAR-Q engine processes signals using a logic gate architecture simulated within JavaScript WebWorkers.
-4.1. Categorization Logic Gate (Simplified)
-The system filters targets through a cascade of logical conditions (AND/OR/NOT) to classify threats.
- * Inputs: Speed (v), Altitude (h), Callsign (C).
- * Logic:
-   *    * This can be represented as a boolean expression:
+1. فیزیک اصلی: چرا رادار کوانتومی، Stealth را شکست می‌دهد
 
-4.2. Parallel Processing Architecture
-To handle the massive throughput of binary blobs without freezing the UI, we utilize multi-threaded architecture:
-[Main Thread] --(Message)--> [Worker 1: Blob Analysis]
-                             [Worker 2: Geodesic Math]
-                             [Worker 3: GLTF Rendering]
-       <--(Result)-- [Aggregator]
+برای شبیه‌سازی دقیق این موضوع، محیط شما باید تفاوت اساسی بین تشخیص کلاسیک و کوانتومی را مدل‌سازی کند.
 
-5. Implementation (Source Code Extract)
-The following JavaScript (ES6+) code demonstrates the interception of the HTTP/3 stream to analyze the "Quantum Potential" of the incoming data packets. This is the heart of the TAR-Q engine.
-/**
- * TAR-Q Quantum Core Interceptor
- * Intercepts the native fetch API to analyze binary blob latency.
- */
-(function activateQuantumMode() {
-    const originalFetch = window.fetch;
+* رادار کلاسیک: یک موج رادیویی ارسال می‌کند. فناوری Stealth (مانند B-2 Spirit یا F-35) با جذب آن موج یا منحرف کردن آن از گیرنده کار می‌کند. اگر هیچ انرژی برنگردد، رادار چیزی نمی‌بیند.
 
-    window.fetch = async function(url, options) {
-        // Filter for relevant data streams only
-        if(url.includes('flightradar') || url.includes('feed')) {
-            
-            const t0 = performance.now(); // Start time (t0)
-            
-            // Execute the fetch
-            const response = await originalFetch(url, options);
-            
-            // Clone the stream to perform non-destructive analysis
-            const clone = response.clone();
-            const blob = await clone.blob(); // Get raw binary data
-            
-            const t1 = performance.now(); // End time (t1)
-            const latency = t1 - t0;      // Calculate Delta Tau
-            const blobSize = blob.size;   // Calculate Mass
+* رادار کوانتومی (روشنایی کوانتومی): یک جفت فوتون درهم‌تنیده (سیگنال و ایدلر) تولید می‌کند.
 
-            // Quantum Anomaly Threshold Calculation
-            // If latency is near-zero (superluminal simulation) 
-            // and mass is significant, we have a detection.
-            if(latency < 50 && blobSize > 1000) {
-                 console.warn(">> ANOMALY DETECTED: Stealth Signature Confirmed");
-                 triggerQuantumVisuals(); // Engage 3D Rendering
-            }
-            
-            return response;
-        }
-        return originalFetch(url, options);
-    };
-})();
+* سیگنال به محیط سه‌بعدی ارسال می‌شود.  * لایه Idler به صورت محلی در یک حافظه کوانتومی نگهداری می‌شود.
 
-6. Conclusion
-TAR-Q demonstrates that specialized hardware is not strictly necessary for advanced aerial reconnaissance. By applying principles of Electromagnetic Interferometry to the Digital Layer (OSI Layer 7), we can achieve situational awareness that rivals traditional radar systems, bypassing the limitations of standard ADS-B receivers.
-Approved by: Cinascorp Systems
-System Status: OPTIMAL
+* حتی اگر هدف بازتاب کمی داشته باشد (پنهان‌کاری) و محیط نویزدار باشد (نویز حرارتی)، "شبح" درهم‌تنیدگی باقی می‌ماند. گیرنده همبستگی بین سیگنال ضعیف برگشتی و لایه Idler ذخیره شده را اندازه‌گیری می‌کند.
+
+۲. معماری شبیه‌سازی
+شما نمی‌توانید به سادگی از یک موتور فیزیک استاندارد (مانند Nvidia PhysX) استفاده کنید زیرا آنها فقط برخوردهای کلاسیک را محاسبه می‌کنند. شما به یک موتور ترکیبی کوانتومی-کلاسیک نیاز دارید.
+
+الف. لایه پشتی کوانتومی ("مغز")
+این لایه حالت‌های کوانتومی را محاسبه می‌کند.
+
+* تولید حالت: حالت خلاء فشرده دو حالته (TMSV) را شبیه‌سازی کنید.
+
+* تعداد فوتون (N_S): شما معمولاً فوتون‌های مایکروویو را شبیه‌سازی می‌کنید.
+
+* ناهمدوسی: شما باید یک "تابع اتلاف" را به پرتو سیگنال هنگام عبور از جو شبیه‌سازی شده اعمال کنید.
+
+ب. محیط سه‌بعدی ("جهان")
+این لایه هندسه و ردیابی پرتو را مدیریت می‌کند.
+ * هدف (شیء پنهان): یک مدل سه‌بعدی از یک هواپیمای پنهان‌کار را وارد کنید.
+
+* ویژگی: هندسه: سطوح زاویه‌دار طراحی شده برای پراکنده کردن پرتوها.
+
+* ویژگی: جذب: یک نقشه بافت که مشخص می‌کند چه تعداد فوتون جذب (گم) می‌شوند و چه تعداد بازتاب نمی‌شوند.
+
+* نویز (زمینه حرارتی): در یک شبیه‌سازی کوانتومی، فضای خالی خالی نیست؛ بلکه با فوتون‌های حرارتی (نویز) پر شده است که با سیگنال شما مخلوط می‌شوند.
+
+۳. منطق تشخیص ("کد")
+
+در شبیه‌سازی شما، "تشخیص" یک آزمون فرضیه ریاضی است.
+
+* پخش پرتو: شما یک "پرتوی" (نشان‌دهنده حالت سیگنال) را به صحنه سه‌بعدی شلیک می‌کنید.
+
+* تعامل:
+
+* اگر به هدف پنهان‌کار برخورد کند: انرژی توسط ضریب جذب پنهان‌کاری \kappa تضعیف (ضعیف) می‌شود.
+
+* سیگنال بازگشتی با نویز محیطی (نویز گاوسی) مخلوط می‌شود.  * اندازه‌گیری مشترک: شبیه‌سازی، پرتو بازگشتی را با داده‌های ذخیره شده "Idler" مقایسه می‌کند.
+
+* نتیجه: اگر همبستگی از آستانه خاصی عبور کند - حتی اگر سیگنال بازگشتی فوق‌العاده ضعیف باشد - هدف "شناسایی" می‌شود.
+
+۴. پشته فناوری پیشنهادی
+برای ساخت این، احتمالاً باید یک موتور تجسم را با یک backend ریاضی ترکیب کنید.
+
+| کامپوننت | ابزار پیشنهادی | هدف | |---|---|---|
+| موتور بصری | موتور Unreal 5 یا Unity | مدیریت دنیای سه‌بعدی، مدل هواپیمای رادارگریز و ردیابی پرتو مسیر سیگنال. |
+| ریاضی کوانتومی | پایتون (کتابخانه QuTiP) | محاسبه ماتریس‌های چگالی و توابع ویگنر برای حالت‌های کوانتومی. |
+| پل | ZeroMQ یا پایتون برای Unity | ارسال داده‌های برخورد پرتو از Unity به Python برای محاسبه احتمال همبستگی کوانتومی. |
+| Data Viz | Matplotlib |  رسم نمودار «احتمال خطا» در مقابل «نسبت سیگنال به نویز». |
+
+5. نقشه راه پیاده‌سازی
+مرحله 1: کانال «نویز»
+اسکریپتی ایجاد کنید که سیگنالی تولید کند و «نویز گاوسی» را به آن اضافه کند. این کار جو را شبیه‌سازی می‌کند. در رادار کوانتومی، مزیت این است که درهم‌تنیدگی بهتر از همبستگی‌های کلاسیک در برابر نویز مقاومت می‌کند.
+
+مرحله 2: اصلاح‌کننده پنهان‌کاری
+یک شیء سه‌بعدی ساده (یک مخروط چندوجهی) در موتور سه‌بعدی خود ایجاد کنید.
+
+* منطق کلاسیک: اگر پرتو با زاویه > 45^\circ برخورد کند، 0 (منحرف شده) را برگردانید.
+
+* منطق کوانتومی: اگر پرتو برخورد کند، بخش کوچکی از سیگنال (مثلاً 0.01٪) را برگردانید، اما داده‌های همبستگی فاز مرتبط با آن پرتو را حفظ کنید.
+
+مرحله 3: گیرنده
+یک آزمون فرضیه کوانتومی را پیاده‌سازی کنید.
+
+ * H_0 (فرضیه پوچ): سیگنال برگشتی فقط نویز است (بدون هدف).
+
+* H_1 (فرضیه هدف): سیگنال برگشتی نویز + مقدار بسیار کمی سیگنال درهم‌تنیده است.
+
+خلاصه حلقه شبیه‌سازی
+> تولید جفت درهم‌تنیده \rightarrow ارسال سیگنال به دنیای سه‌بعدی \rightarrow محاسبه بازتاب از هندسه پنهان \rightarrow ترکیب با نویز \rightarrow ترکیب با Idler \rightarrow بررسی همبستگی.
