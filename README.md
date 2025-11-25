@@ -31,3 +31,4 @@ GLTF visualization: Render the output data in a native 3D environment (WebGL/Thr
 4. Conclusion
 
 Our observations show that “noise” is actually data whose patterns we have not yet discovered. By converting network noise into visual data, TAR-Q introduces a new generation of passive surveillance systems that have near-zero cost but provide global coverage.
+=
