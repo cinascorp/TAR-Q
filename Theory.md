@@ -88,4 +88,4 @@ Subject: Implementation of Browser-Based Quantum-Like Radar Systems
 * H_1 (فرضیه هدف): سیگنال برگشتی نویز + مقدار بسیار کمی سیگنال درهم‌تنیده است.
 
 خلاصه حلقه شبیه‌سازی
-> تولید جفت درهم‌تنیده \rightarrow ارسال سیگنال به دنیای سه‌بعدی \rightarrow محاسبه بازتاب از هندسه پنهان \rightarrow ترکیب با نویز \rightarrow ترکیب با Idler \rightarrow بررسی همبستگی.
+> تولید جفت درهم‌تنیده \rightarrow$$ ارسال سیگنال به دنیای سه‌بعدی \rightarrow$$ محاسبه بازتاب از هندسه پنهان \rightarrow$$ ترکیب با نویز \rightarrow ترکیب با Idler $$\rightarrow بررسی همبستگی.
