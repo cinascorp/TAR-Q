@@ -13,7 +13,7 @@ $$
 a = \sin^2\left(\frac{\Delta\phi}{2}\right) + \cos\phi_1 \cdot \cos\phi_2 \cdot \sin^2\left(\frac{\Delta\lambda}{2}\right)
 $$
 $$
-c = 2 \cdot \a.tan2(\sqrt{a},\ \sqrt{1-a})
+c = 2 \cdot atan2(\sqrt{a},\ \sqrt{1-a})
 $$
 $$
 d = R \cdot c \quad (R = 6371\ \text{km})
