@@ -51,7 +51,7 @@ cinascorp@gmail.com
 https://cinascorp.com
 
 #########$###########################################################
-```markdown
+
 # TAR-Q: Distributed Passive Coherent Location (PCL) via HTTP/3 Stream Interferometry
 
 **Project Documentation & Theoretical Framework**  
