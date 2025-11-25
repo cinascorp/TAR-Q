@@ -10,7 +10,7 @@
     />
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/ol@v7.4.0/ol.css"
+      href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css"
     />
     <style>
       :root{--bg:#0b0f14;--panel:#0f141b;--text:#ffd400;--border:#1c2833;--muted:#9aa2aa;--country:#90ee90;--province:#ff69b4;--road:#8fd3ff;--mil:#ff2d2d;--passenger:#ffe34d;--commercial:#ffa64d;--private:#b56dff;--droneLow:#ffffff;--droneHigh:#7f7f7f}body,html{height:100%;background:var(--bg);color:var(--text)}#map{position:absolute;top:0;left:0;right:0;bottom:0}.ol-rotate,.ol-zoom{filter:drop-shadow(0 0 2px rgba(0,0,0,.6))}.map-layer-toggle{position:fixed;top:60px;right:10px;z-index:1100;background:var(--panel);border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer}.offcanvas-end{background:var(--panel);border-left:1px solid var(--border);color:var(--text)}.offcanvas-end .form-check-input,.offcanvas-end .form-control,.offcanvas-end .form-select{background:#0b0f14;color:var(--text);border-color:var(--border)}.offcanvas-end .table{color:var(--text)}.offcanvas-end .table thead th{border-bottom-color:var(--border)}.offcanvas-end .table td,.offcanvas-end .table th{border-color:var(--border)}@media (max-width:768px){.offcanvas-end{width:80%!important}}#menuToggle{position:fixed;top:240px;right:11px;z-index:1100;background:var(--panel);border:2px solid var(--border);color:var(--text)}.badge-outline{border:1px solid var(--border);color:var(--text);background:0 0}.legend{position:fixed;left:10px;bottom:10px;z-index:1000;background:rgba(15,20,27,.9);border:1px solid var(--border);border-radius:.5rem;padding:.5rem .75rem;font-size:.9rem}.legend .item{display:flex;align-items:center;gap:.4rem;margin:.2rem 0}.legend .swatch{width:16px;height:16px;border-radius:3px;display:inline-block}.legend .icon-swatch{width:20px;height:20px;display:inline-block}#popup{position:absolute;background:rgba(15,20,27,.98);border:1px solid var(--border);padding:.5rem .75rem;border-radius:.5rem;min-width:240px;color:var(--text);z-index:900}#popup-closer{cursor:pointer;float:right}.small-muted{color:var(--muted);font-size:.85rem}#attribution{position:fixed;bottom:10px;right:10px;z-index:900;background:rgba(15,20,27,.9);border:1px solid var(--border);border-radius:.5rem;padding:.2rem .5rem;font-size:.8rem}#popup{max-width:400px}#aircraft-image-container img{transition:transform .2s ease}#aircraft-image-container img:hover{transform:scale(1.05)}.badge-outline{border:1px solid var(--border);color:var(--text);background:0 0}.ol-zoom{left:auto;right:10px;top:160px}.spectrum-bar{width:120px;height:16px;border-radius:3px;display:inline-block;background:linear-gradient(to right,orange,#ff0,#0f0,#00f,indigo,purple)}#copilotToggle{position:fixed;top:110px;right:10px}
@@ -318,7 +318,7 @@
     </div>
     
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/ol@v7.4.0/dist/ol.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
 
 
   </body>
@@ -327,7 +327,7 @@
     <script>
       (function() {
             		const TILE_URLS = [
-                        // UPDATED: Using ArcGIS World Imagery as the default base map
+                  // UPDATED: Using ArcGIS World Imagery as the default base map
             			'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
             			//'https://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
             		];
@@ -1360,7 +1360,7 @@
             const blobSize = blob.size;
             console.log(`%c[BLOB STREAM] Size: ${blobSize}b | Latency: ${latency.toFixed(2)}ms | Quantum Potential: HIGH`, "color: #0f0; font-family: monospace;");
             if(latency < 50 && blobSize > 1000) {
-                 console.log("⚠️ ANOMALY DETECTED (Possible Stealth Target) ⚠️", "color: red; font-weight: bold; blink;");
+                 console.log("%c⚠️ ANOMALY DETECTED (Possible Stealth Target) ⚠️", "color: red; font-weight: bold; blink;");
             }
             
             return response;
@@ -1386,4 +1386,5 @@
     
     alert("TAR-Q QUANTUM MODE: ENGAGED\n\nHello, Commander.");
 })();
+
 </script>
