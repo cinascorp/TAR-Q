@@ -1,0 +1,87 @@
+
+
+1. Abstract
+​This document outlines the theoretical and practical implementation of TAR-Q (Targeted Aerial Reconnaissance - Quantum).
+Unlike active radar systems that emit high-power electromagnetic waves, TAR-Q operates as a Passive Coherent Location (PCL) system. By leveraging the ubiquity of global web traffic and the HTTP/3 (QUIC) protocol, the system turns a client-side browser into a distributed sensor. 
+The core innovation lies in analyzing the Micro-Latency (Jitter) and Binary Blob Integrity of data streams to detect aerial anomalies—including Low-Observable (Stealth) targets—before standard ADS-B decoding occurs.
+​
+2. Mathematical Framework & Geodesic Calculations
+​To visualize targets accurately on a 3D geoid surface, TAR-Q employs spherical trigonometry rather than simple Euclidean geometry.
+
+​2.1. Haversine Formula for Geodesic Distance
+​To calculate the precise distance (d) between the receiver (client) and the target aircraft for interpolation, we utilize the Haversine law:
+
+$$
+a = \sin^2\left(\frac{\Delta\phi}{2}\right) + \cos \phi_1 \cdot \cos \phi_2 \cdot \sin^2\left(\frac{\Delta\lambda}{2}\right)
+$$
+
+$$
+c = 2 \cdot \text{atan2}\left(\sqrt{a}, \sqrt{1-a}\right)
+$$
+
+$$
+d = R \cdot c
+$$
+
+Where:
+
+\( \phi \) is latitude, \( \lambda \) is longitude (in radians).
+\( R \) is the Earth's radius (6,371 km).
+
+2.2. Motion Interpolation (The "Fox" Algorithm)
+To solve the "stuttering" issue of discrete data packets, we implemented a Linear Interpolation (LERP) algorithm for smooth rendering in the DOM update cycle:
+
+
+$$
+P(t) = P_{\text{start}} + (P_{\text{end}} - P_{\text{start}}) \cdot \frac{t - t_0}{\Delta t}
+$$
+
+
+Where:
+
+\( t \) is the current timestamp,
+and 
+\( \Delta t \) is the data refresh interval.
+
+3. Electromagnetic Theory: Network Jitter as a Sensor
+The core hypothesis of TAR-Q is that physical objects moving through the RF spectrum create disturbances in the Electromagnetic Field (EMF), which manifests as "Quantum Noise" in digital packet transmission.
+
+3.1. Signal-to-Noise Ratio (SNR) in Binary Streams
+We treat the incoming fetch response not as a file, but as a signal wave. 
+The integrity of the Blob stream 
+
+(\( S_{\text{blob}} \)) is defined as:
+
+$$
+\text{SNR}_{\text{blob}} = \frac{P_{\text{signal}}}{P_{\text{noise}}} = \frac{\sum_{i=0}^{N} |B_i|^2}{\sigma^2_{\text{jitter}}}
+$$
+
+Where:
+$$
+$$\( B_i \)$$ represents the byte stream amplitude.
+\( \sigma^2_{\text{jitter}} \) is the variance of the packet arrival time (Latency Jitter).
+
+3.2. Stealth Detection Logic
+Low-Observable aircraft minimize their Radar Cross Section (RCS) (\( \sigma \)). However, they cannot eliminate their "shadow" on the background communication noise. We detect this via the Latency Delta Function:
+
+$$
+\Delta \tau = T_{\text{rx}} - T_{\text{tx}} - \frac{d}{c}
+$$
+
+If \( \Delta \tau \) exhibits a non-random pattern (Entropy decrease) while the Blob size remains constant, the system flags a "Ghost Target" (Stealth Anomaly).
+
+4. Logic Circuits & Algorithmic State Machine
+The TAR-Q engine processes signals using a logic gate architecture simulated within JavaScript WebWorkers.
+
+4.1. Categorization Logic Gate (Simplified)
+The system filters targets through a cascade of logical conditions (AND/OR/NOT) to classify threats
+ Inputs: Speed (v), Altitude (h), Callsign (C)
+
+Logic:
+$$
+\text{Drone} = (h < 1200) \land (v < 120) \land \neg \text{Helicopter}.
+$$
+
+$$
+\text{Military} = (C \in \{\text{MIL, USAF, NATO}\}) \lor (\text{Squawk} \in \{7700, 7600\})
+$$
