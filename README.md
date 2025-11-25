@@ -92,7 +92,6 @@ $$
                            [Worker 3: WebGL/GLTF Rendering]
               ◄──Result─── [Aggregator]
 ```
-
 ## 5. Implementation (Source Code Extract)
 
 The following JavaScript (ES6+) code demonstrates the interception of the HTTP/3 stream to analyze the "Quantum Potential" of incoming data packets.
@@ -104,7 +103,6 @@ The following JavaScript (ES6+) code demonstrates the interception of the HTTP/3
  */
 (function activateQuantumMode() {
     const originalFetch = window.fetch;
-
     window.fetch = async function(url, options) {
         if(url.includes('flightradar') || url.includes('feed')) {
             const t0 = performance.now();
@@ -121,8 +119,7 @@ The following JavaScript (ES6+) code demonstrates the interception of the HTTP/3
             if(latency < 50 && blobSize > 1000) {
                  console.warn(">> ANOMALY DETECTED: Stealth Signature Confirmed");
                  triggerQuantumVisuals();
-            }
-            
+            }            
             return response;
         }
         return originalFetch(url, options);
