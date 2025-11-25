@@ -1,6 +1,7 @@
 
 
-**Subject:** Updated Abstract & Apologies for Missing the Conference Poster Session – TAR-Q Project (Passive Coherent Location via HTTP/3 Stream Interferometry)
+# TAR-Q Project
+## (Passive Coherent Location via HTTP/3 Stream Interferometry)
 
 
 ### TAR-Q: Distributed Passive Coherent Location via HTTP/3 Stream Interferometry  
@@ -12,7 +13,7 @@ $$
 a = \sin^2\left(\frac{\Delta\phi}{2}\right) + \cos\phi_1 \cdot \cos\phi_2 \cdot \sin^2\left(\frac{\Delta\lambda}{2}\right)
 $$
 $$
-c = 2 \cdot \atantwo(\sqrt{a},\ \sqrt{1-a})
+c = 2 \cdot \a.tan2(\sqrt{a},\ \sqrt{1-a})
 $$
 $$
 d = R \cdot c \quad (R = 6371\ \text{km})
@@ -25,7 +26,7 @@ $$
 
 #### 3.1 Signal-to-Noise Model in Binary Streams
 $$
-\text{SNR}_{\text{blob}} = 10 \log_{10} \left( \frac{\sum |B_i|^2}{\sigma^2_{\text{jitter}}} \right)
+SNR_{blob} = \frac{P_{signal}}{P_{noise}} = \frac{\sum_{i=0}^{N} |B_i|^2}{\sigma^2_{jitter}})
 $$
 
 #### 3.2 Latency Delta Anomaly Detection (Stealth Shadow)
