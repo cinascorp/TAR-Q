@@ -1,4 +1,4 @@
-##this website banned because of expose stealth technology in demo mod after i sent post in LinkedIn! 
+## this website banned because of expose stealth technology in demo mod after i sent post in LinkedIn! 
 # 👇
 # WWW.CINASCORP.COM
 ### the project was open source for entire world ! and for peace! 
