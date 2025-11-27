@@ -1,5 +1,8 @@
+##this website banned because of expose stealth technology in demo mod after i sent post in LinkedIn! 
+# 👇
 # WWW.CINASCORP.COM
-
+### the project was open source for entire world ! and for peace! 
+### hopefully no one can stop me ! you can run solo index.html in your local system in any framework ! 
 # TAR-Q 
 Distributed Passive Coherent Location (PCL) via HTTP/3 Stream Interferometry
 
