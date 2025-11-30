@@ -1,7 +1,7 @@
 # WWW.CINASCORP.COM
 <img width="2560" height="1689" alt="cinas" src="https://github.com/user-attachments/assets/4b1fa808-95d4-4570-ab09-60b2596dabca" />
 # TAR-Q 
-Distributed Passive Coherent Location (PCL) via HTTP/3 Stream Interferometry
+## Distributed Passive Coherent Location (PCL) via HTTP/3 Stream Interferometry
 
 **Project Documentation & Theoretical Framework**  
 **Principal Investigator:** Cinascorp  
