@@ -189,7 +189,7 @@ Passive Coherent Location (PCL) Radar Demonstrator- NATC
 Optimizing energy and latency in edge computing through a . Nature
 - www.nature.com
 
-Delay Analysis in loT Sensor Networks - www.MDPI
+Delay Analysis in loT Sensor Networks
 - www.mdpi.com
 
 Enhancing wireless sensor networkperformance through self-tuned
@@ -243,13 +243,16 @@ Toward Massive Satellite Signals of Opportunity Positioning
 Feasibility Study of EO SARs as Opportunity Illuminators in Passive 
 - www.pmc.ncbi.nlm.nih.gov
 
-Adaptive Estimation of Signals of Opportunity people.engineering.osu.edu Bistatic Radar for Tracking a Moving Target using Signals of ...
+Adaptive Estimation of Signals of Opportunity 
+- www.people.engineering.osu.edu
+
+Bistatic Radar for Tracking a Moving Target using Signals of ...
 - www.usu.flintbox.com
 
 An Introduction to Radio Locationing with Signals of Opportunity
 - www.riverpublishers.com
 
-Using passive radars and satellite signals to detect and...- www.YouTube
+Using passive radars and satellite signals to detect and...
 - www.youtube.com
 
 Signals of opportunity: Holy Grail or a waste of time?-GPS World
@@ -261,7 +264,7 @@ Waveform Analysis of Transmitters of Opportunity for Passive Radar
 Scanning and abusing the QUIC protocol- www.SANS ISC
 - www.isc.sans.edu
 
-The Security Challenges of HTTP/3 and QUIC - www.What You Need to..
+The Security Challenges of HTTP/3 and QUIC - What You Need to..
 - www.medium.com
 
 Inspecting HTTP3 traffic | FortiGate / FortiOS 7.6.5
