@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=0.8" />
+    <title>TAR-Quantum</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css"
+    /> 
+  </head>
+  <body>
+    <button
+      id="menuToggle"
+      class="btn btn-sm"
+      data-bs-toggle="offcanvas"
+      data-bs-target="#rightMenu"
+      aria-controls="rightMenu"
+      aria-expanded="false"
+    >
+      <span id="menuToggleIcon">&lt;</span></button
+    ><button
+      id="mapLayerToggle"
+      class="map-layer-toggle"
+      title="Toggle Map Layer"
+    >
+      L</button
+    ><button
+      id="tarToggle"
+      class="map-layer-toggle"
+      title="Open tar"
+      data-bs-toggle="offcanvas"
+      data-bs-target="#tarPanel"
+    >
+      ㉿
+    </button>
+    <div id="map"></div>
+    <div id="popup" style="display:none">
+      <div><span id="popup-closer">✕</span></div>
+      <div id="popup-content"></div>
+      <div
+        id="aircraft-image-container"
+        style="display:none;margin-top:10px;text-align:center"
+      >
+        <iframe></iframe>
+        <div id="aircraft-links" style="margin-top:5px"></div>
+      </div>
+    </div>
+    <div id="attribution"><span class="small-muted">© OpenStreetMap</span></div>
+    <div
+      class="offcanvas offcanvas-end"
+      tabindex="-1"
+      id="rightMenu"
+      aria-labelledby="rightMenuLabel"
+    >
+      <div class="offcanvas-header">
+        <h5 id="rightMenuLabel">Settings & Information</h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="offcanvas-body">
+        <div class="mb-3">
+          <label class="form-label">Flight Group</label
+          ><select id="groupSelect" class="form-select"></select>
+          <div class="form-text text-warning">bunch of flights</div>
+        </div>
+        <div class="row g-2 align-items-center mb-3">
+          <div class="col-auto">
+            <button id="refreshBtn" class="btn btn-outline-warning btn-sm">
+              Refresh now
+            </button>
+          </div>
+          <div class="col-auto form-check form-switch">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="autoUpdateSwitch"
+              checked
+            /><label class="form-check-label" for="autoUpdateSwitch"
+              >Auto update (5s)</label
+            >
+          </div>
+          <div class="col-auto form-check form-switch">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="useProxySwitch"
+              checked
+            /><label class="form-check-label" for="useProxySwitch"
+              >Use CORS proxy</label
+            >
+          </div>
+        </div>
+        <div class="mb-3">
+          <h6 class="mb-2">Information</h6>
+          <table class="table table-sm align-middle">
+            <tbody>
+              <tr>
+                <th scope="row">Total flights (repository)</th>
+                <td id="totalFlights">—</td>
+              </tr>
+              <tr>
+                <th scope="row">Passenger flights</th>
+                <td id="countPassenger">—</td>
+              </tr>
+              <tr>
+                <th scope="row">Commercial (other)</th>
+                <td id="countCommercial">—</td>
+              </tr>
+              <tr>
+                <th scope="row">private flights</th>
+                <td id="countprivate">—</td>
+              </tr>
+              <tr>
+                <th scope="row">Helicopters</th>
+                <td id="countHeli">—</td>
+              </tr>
+              <tr>
+                <th scope="row">Military flights</th>
+                <td id="countMilitary">—</td>
+              </tr>
+              <tr>
+                <th scope="row">Drones</th>
+                <td id="countDrones">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mb-3">
+          <h6 class="mb-2">Unidentified drones</h6>
+          <div class="table-responsive" style="max-height:220px;overflow:auto">
+            <table class="table table-sm" id="unidentifiedDroneTable">
+              <thead>
+                <tr>
+                  <th>Hex</th>
+                  <th>Lat</th>
+                  <th>Lon</th>
+                  <th>Alt (m AGL)</th>
+                  <th>Speed (km/h)</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <h6 class="mb-2">Drones by country (sorted by hex)</h6>
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                role="switch"
+                id="resolveCountrySwitch"
+              /><label class="form-check-label" for="resolveCountrySwitch"
+                >Resolve countries (slow)</label
+              >
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small text-muted"
+              >Selected flights:<span id="selectedFlightsCount">0</span></span
+            ><button
+              class="btn btn-sm btn-outline-danger"
+              onclick="clearAllSelections()"
+            >
+              Clear All
+            </button>
+          </div>
+          <div class="table-responsive" style="max-height:260px;overflow:auto">
+            <table class="table table-sm" id="droneByCountryTable">
+              <thead>
+                <tr>
+                  <th>Country</th>
+                  <th>Hex</th>
+                  <th>Lat</th>
+                  <th>Lon</th>
+                  <th>Alt (m AGL)</th>
+                  <th>Speed (km/h)</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="mb-3">
+          <h6 class="mb-2">Color and Symbol Guide</h6>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Color</th>
+                  <th>Symbol</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Military</td>
+                  <td>
+                    <span
+                      class="swatch"
+                      style="background:var(--mil);width:20px;height:20px;display:inline-block;border-radius:3px"
+                    ></span>
+                  </td>
+                  <td>Fighter Jet Icon (red)</td>
+                </tr>
+                <tr>
+                  <td>Manned (non‑military)</td>
+                  <td><span class="spectrum-bar"></span></td>
+                  <td>Airplane Icon</td>
+                </tr>
+                <tr>
+                  <td>Helicopter</td>
+                  <td>
+                    <span
+                      class="icon-swatch"
+                      id="legend-heli-menu"
+                      style="width:20px;height:20px;display:inline-block"
+                    ></span>
+                  </td>
+                  <td>Helicopter Icon</td>
+                </tr>
+                <tr>
+                  <td>Drone</td>
+                  <td>
+                    <span
+                      class="icon-swatch"
+                      id="legend-drone-menu"
+                      style="width:20px;height:20px;display:inline-block"
+                    ></span>
+                  </td>
+                  <td>White on dark map, Black on light map</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="mb-3">
+          <h6 class="mb-2">Flight Groups by Country</h6>
+          <div class="table-responsive" style="max-height:300px;overflow:auto">
+            <table class="table table-sm" id="flightGroupsByCountryTable">
+              <thead>
+                <tr>
+                  <th>Country</th>
+                  <th>Group</th>
+                  <th>Count</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="mb-3" id="selectedGroupDetails" style="display:none">
+          <h6 class="mb-2">Selected Group Details</h6>
+          <div class="table-responsive" style="max-height:300px;overflow:auto">
+            <table class="table table-sm" id="selectedGroupTable">
+              <thead>
+                <tr>
+                  <th>Flight Number</th>
+                  <th>Aircraft Type</th>
+                  <th>Country</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="offcanvas offcanvas-start"
+      tabindex="-1"
+      id="tarPanel"
+      aria-labelledby="tarLabel"
+    >
+      <div class="offcanvas-header">
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+        >
+          Close
+        </button>
+      </div>
+      <div
+        class="offcanvas-body p-0"
+        style="height:calc(60% - 56px)"
+        font="bold"
+      >
+        <h2>T∆R</h2>
+        <div class="p-2 small-muted">
+          <h3>Cinascorp</h3>
+          <br /><a
+            class="link-warning"
+            id="tarExternalLink"
+            href="www.github.com/cinascorp/tar-q"
+            target="_blank"
+            rel="noopener"
+            >open tar source in github</a
+          >.
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
