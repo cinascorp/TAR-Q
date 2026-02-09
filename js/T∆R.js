@@ -1,0 +1,1087 @@
+(function () {
+  const TILE_URLS = [
+      "https://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    ],
+    COLORS = {
+      private: getCssVar("--private"),
+      military: getCssVar("--mil"),
+      passenger: getCssVar("--passenger"),
+      commercial: getCssVar("--commercial"),
+      droneLow: getCssVar("--droneLow"),
+      droneHigh: getCssVar("--droneHigh"),
+    },
+    DRONE_SVG = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 10a2 2 0 100 4 2 2 0 000-4zm-7-2l3 1 2-1 1 2-1 2-2-1-3 1 1-3-1-2zm14 0l-3 1-2-1-1 2 1 2 2-1 3 1-1-3 1-2zM5 17l3-1 2 1 1-2-1-2-2 1-3-1 1 3-1 2zm14 0l-3-1-2 1-1-2 1-2 2 1 3-1-1 3 1 2z"/></svg>')}`,
+    DRONE_SVG_BLACK = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill=""><path d="M12 10a2 2 0 100 4 2 2 0 000-4zm-7-2l3 1 2-1 1 2-1 2-2-1-3 1 1-3-1-2zm14 0l-3 1-2-1-1 2 1 2 2-1 3 1-1-3 1-2zM5 17l3-1 2 1 1-2-1-2-2 1-3-1 1 3-1 2zm14 0l-3-1-2 1-1-2 1-2 2 1 3-1-1 3 1 2z"/></svg>')}`,
+    HELI_SVG = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="gray"><path d="M3 12h10a4 4 0 110 8H8a5 5 0 01-5-5v-3zm14-6h-4a1 1 0 110-2h9a1 1 0 110 2h-3v5h-2V6z"/></svg>')}`,
+    AIRPLANE_SVG = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="azure"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>')}`,
+    AIRPLANE_SMALL_SVG = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill=""><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>')}`,
+    AIRPLANE_PROP_SVG = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill=""><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>')}`,
+    FIGHTER_SVG = `data:image/svg+xml;utf8,${encodeURIComponent('<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="red" stroke="#000000" stroke-width="0.4" transform="rotate(-90 12 12)" d="M23.25 14.25q0 0.35-3.35 1.1l-4.1 0.35l-2.6 0.75h-0.75l-3.4 4.1h0.8q0.3 0 0.5 0.05t0.25 0.15-0.25 0.15-0.5 0.05h-1.1-1.85-0.75v-0.35h0.75v-4.85h-1.85l-2.25 2.6h-1.1l-0.35-0.35v-2.25h0.35v-0.35h1.5v-0.1l-2.25-0.25v-1.5l2.25-0.25v-0.1h-1.5v-0.35h-0.35v-2.25l0.35-0.35h1.1l2.25 2.6h1.85v-4.85h-0.75v-0.35h0.75 1.85 1.1q0.3 0 0.5 0.05t0.25 0.15-0.25 0.15-0.5 0.05h-0.8l3.4 4.1h0.75l2.6 0.75 4.1 0.35q3.05 0.7 3.35 1.05z"/></svg>')}`;
+  function updateDroneLegendIcons() {
+    const e = document.getElementById("legend-drone-menu");
+    if (!e) return;
+    const t = "dark" === currentMapLayer ? DRONE_SVG_BLACK : DRONE_SVG;
+    ((e.style.backgroundImage = `url(${t})`),
+      (e.style.backgroundSize = "contain"),
+      (e.style.backgroundRepeat = "no-repeat"));
+  }
+  ((document.getElementById("legend-heli-menu").style.backgroundImage =
+    `url(${HELI_SVG})`),
+    (document.getElementById("legend-heli-menu").style.backgroundSize =
+      "contain"),
+    (document.getElementById("legend-heli-menu").style.backgroundRepeat =
+      "no-repeat"));
+  const baseLayer = new ol.layer.Tile({
+      source: new ol.source.XYZ({
+        url: TILE_URLS[0],
+        attributions: "© ArcGIS, © OpenStreetMap",
+      }),
+    }),
+    brightLayer = new ol.layer.Tile({
+      source: new ol.source.XYZ({
+        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+        attributions: "© ESRI",
+      }),
+      visible: !1,
+    }),
+    trackLayer = new ol.layer.Vector({ source: new ol.source.Vector() }),
+    markerLayer = new ol.layer.Vector({ source: new ol.source.Vector() }),
+    selectedFlightLayer = new ol.layer.Vector({
+      source: new ol.source.Vector(),
+    }),
+    map = new ol.Map({
+      target: "map",
+      layers: [
+        baseLayer,
+        brightLayer,
+        trackLayer,
+        markerLayer,
+        selectedFlightLayer,
+      ],
+      view: new ol.View({
+        center: ol.proj.fromLonLat([55, 35]),
+        zoom: 5,
+        minZoom: 3,
+        maxZoom: 18,
+      }),
+    }),
+    popupEl = document.getElementById("popup"),
+    popupCloser = document.getElementById("popup-closer"),
+    popupContent = document.getElementById("popup-content"),
+    popup = new ol.Overlay({
+      element: popupEl,
+      autoPan: { animation: { duration: 250 } },
+    });
+  (map.addOverlay(popup),
+    popupCloser.addEventListener("click", () => {
+      (popup.setPosition(void 0), (popupEl.style.display = "none"));
+    }),
+    baseLayer.getSource().on("tileloaderror", () => {
+      baseLayer.setSource(new ol.source.OSM());
+    }));
+  let flightsByHex = new Map(),
+    tracksByHex = new Map(),
+    lastFullCount = 0,
+    currentGroup = "A",
+    sortedHexes = [],
+    autoUpdateTimer = !0,
+    resolvingCountries = !1,
+    elevationQueueBusy = !1,
+    selectedFlights = new Set(),
+    flightGroupsByCountry = new Map(),
+    currentMapLayer = "dark";
+  const countryCache = new Map(),
+    elevationCache = new Map(),
+    lastColorByHex = new Map(),
+    groupSelect = document.getElementById("groupSelect"),
+    refreshBtn = document.getElementById("refreshBtn"),
+    autoUpdateSwitch = document.getElementById("autoUpdateSwitch"),
+    useProxySwitch = document.getElementById("useProxySwitch"),
+    resolveCountrySwitch = document.getElementById("resolveCountrySwitch"),
+    totalFlightsEl = document.getElementById("totalFlights"),
+    countPassengerEl = document.getElementById("countPassenger"),
+    countCommercialEl = document.getElementById("countCommercial"),
+    countprivateEl = document.getElementById("countprivate"),
+    countHeliEl = document.getElementById("countHeli"),
+    countMilitaryEl = document.getElementById("countMilitary"),
+    countDronesEl = document.getElementById("countDrones"),
+    mapLayerToggle = document.getElementById("mapLayerToggle"),
+    aircraftLinks = document.getElementById("aircraft-links"),
+    trpEl = document.getElementById("trp"),
+    menuToggleBtn = document.getElementById("menuToggle"),
+    menuToggleIcon = document.getElementById("menuToggleIcon"),
+    offcanvasEl = document.getElementById("rightMenu"),
+    copilotFrame = document.getElementById("copilotFrame"),
+    copilotExternalLink = document.getElementById("copilotExternalLink"),
+    aircraftFrame = document.getElementById("aircraft-frame"),
+    aircraftImageContainer = document.getElementById(
+      "aircraft-image-container",
+    );
+  function getCssVar(e) {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(e)
+      .trim();
+  }
+  function toKmH(e) {
+    if (null == e || isNaN(e)) return null;
+    const t = Number(e);
+    return t <= 0 ? 0 : t <= 250 ? Math.round(3.6 * t) : Math.round(1.852 * t);
+  }
+  function feetToMeters(e) {
+    return Math.round(0.3048 * Number(e));
+  }
+  function metersToFeet(e) {
+    return Math.round(Number(e) / 0.3048);
+  }
+  function lighten(e, t) {
+    const n = parseInt(e.slice(1, 3), 16),
+      o = parseInt(e.slice(3, 5), 16),
+      a = parseInt(e.slice(5, 7), 16),
+      r = Math.round(n + (255 - n) * t),
+      l = Math.round(o + (255 - o) * t),
+      s = Math.round(a + (255 - a) * t);
+    return `#${r.toString(16).padStart(2, "0")}${l.toString(16).padStart(2, "0")}${s.toString(16).padStart(2, "0")}`;
+  }
+  function lerpColor(e, t, n) {
+    const o = parseInt(e.slice(1, 3), 16),
+      a = parseInt(e.slice(3, 5), 16),
+      r = parseInt(e.slice(5, 7), 16),
+      l = parseInt(t.slice(1, 3), 16),
+      s = parseInt(t.slice(3, 5), 16),
+      i = parseInt(t.slice(5, 7), 16),
+      c = Math.round(o + (l - o) * n),
+      u = Math.round(a + (s - a) * n),
+      d = Math.round(r + (i - r) * n);
+    return `#${c.toString(16).padStart(2, "0")}${u.toString(16).padStart(2, "0")}${d.toString(16).padStart(2, "0")}`;
+  }
+  function darken(e, t) {
+    const n = parseInt(e.slice(1, 3), 16),
+      o = parseInt(e.slice(3, 5), 16),
+      a = parseInt(e.slice(5, 7), 16),
+      r = Math.round(n * (1 - t)),
+      l = Math.round(o * (1 - t)),
+      s = Math.round(a * (1 - t));
+    return `#${r.toString(16).padStart(2, "0")}${l.toString(16).padStart(2, "0")}${s.toString(16).padStart(2, "0")}`;
+  }
+  function normalize(e, t, n) {
+    return null == e || isNaN(e)
+      ? 0
+      : Math.max(0, Math.min(1, (e - t) / (n - t)));
+  }
+  function makeGroupLabels(e) {
+    const t = Math.ceil(e / 26e3),
+      n = [],
+      o = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    for (let e = 0; e < t; e++)
+      if (e < 26) n.push(o[e]);
+      else {
+        const t = Math.floor((e - 26) / 26),
+          a = (e - 26) % 26;
+        n.push(o[t] + o[a]);
+      }
+    return n;
+  }
+  function setGroupOptions(e) {
+    const t = makeGroupLabels(e || Math.max(26e3, sortedHexes.length));
+    ((groupSelect.innerHTML = ""),
+      t.forEach((e, t) => {
+        const n = document.createElement("option");
+        ((n.value = e),
+          (n.textContent = `${e} (${26e3 * t + 1}–${26e3 * (t + 1)})`),
+          groupSelect.appendChild(n));
+      }),
+      (groupSelect.value = currentGroup));
+  }
+  function boundsFromView() {
+    const e = map.getView().calculateExtent(map.getSize()),
+      [t, n, o, a] = e,
+      [r, l] = ol.proj.toLonLat([t, n]),
+      [s, i] = ol.proj.toLonLat([o, a]);
+    return { minLat: l, maxLat: i, minLon: r, maxLon: s };
+  }
+  async function fetchFR24(bounds, useProxy = !0) {
+    const params = new URLSearchParams({
+        faa: "1",
+        satellite: "1",
+        mlat: "1",
+        flarm: "1",
+        adsb: "1",
+        gnd: "1",
+        air: "1",
+        vehicles: "1",
+        estimated: "1",
+        maxage: "14400",
+        gliders: "1",
+        stats: "1",
+        uav: "1",
+        mil: "1",
+        ladd: 1,
+        bounds: `${bounds.maxLat},${bounds.minLat},${bounds.minLon},${bounds.maxLon}`,
+      }),
+      urls = [
+        `https://data-cloud.flightradar24.com/zones/fcgi/feed.js?${params}`,
+        `https://adsb.lol/v2/mil.js?${params}`,
+      ],
+      proxify = (e) => [
+        e,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(e)}`,
+        `https://cors.isomorphic-git.org/${e}`,
+      ];
+    for (const base of urls) {
+      const attempts = useProxy ? proxify(base) : [base];
+      for (const u of attempts)
+        try {
+          const resp = await fetch(u, {
+            cache: "no-store",
+            headers: {
+              Accept: "application/json, text/javascript, */*; q=0.01",
+            },
+          });
+          if (!resp.ok) continue;
+          const text = await resp.text();
+          let data = null;
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            data = eval("(" + text + ")");
+          }
+          if (data && "object" == typeof data) return data;
+        } catch (e) {
+          continue;
+        }
+    }
+    throw new Error("Failed to fetch FR24 data (CORS or network)");
+  }
+  function parseFR24(e) {
+    const t = [];
+    let n = 0;
+    e.full_count && (n = Number(e.full_count) || 0);
+    for (const [n, o] of Object.entries(e)) {
+      if (!Array.isArray(o) || o.length < 17) continue;
+      const e = o[0],
+        n = Number(o[1]),
+        a = Number(o[2]);
+      if (isNaN(n) || isNaN(a) || n < -90 || n > 90 || a < -180 || a > 180)
+        continue;
+      const r = Number(o[3]),
+        l = Number(o[4]),
+        s = Number(o[5]),
+        i = o[6],
+        c = o[8],
+        u = o[9],
+        d = 1e3 * Number(o[10]),
+        g = o[11],
+        m = o[12],
+        p = o[13] || o[16],
+        h = Number(o[15]),
+        f = o[16],
+        y = feetToMeters(l),
+        w = toKmH(s);
+      t.push({
+        hex: e,
+        lat: n,
+        lon: a,
+        heading: r,
+        alt_m: y,
+        alt_ft: l,
+        spd_kmh: w,
+        squawk: i,
+        acType: c,
+        registration: u,
+        origin: g,
+        dest: m,
+        flightNumber: p,
+        callsign: f,
+        vertSpeed: h,
+        ts: d,
+      });
+    }
+    return { flights: t, fullCount: n };
+  }
+  (menuToggleBtn.addEventListener("click", () => {
+    const e = "true" === menuToggleBtn.getAttribute("aria-expanded");
+    menuToggleIcon.textContent = e ? "<<" : ">>";
+  }),
+    offcanvasEl.addEventListener("hidden.bs.offcanvas", () => {
+      menuToggleIcon.textContent = "<<";
+    }),
+    offcanvasEl.addEventListener("shown.bs.offcanvas", () => {
+      menuToggleIcon.textContent = ">>";
+    }),
+    mapLayerToggle.addEventListener("click", () => {
+      ("dark" === currentMapLayer
+        ? (baseLayer.setVisible(!1),
+          brightLayer.setVisible(!0),
+          (currentMapLayer = "bright"),
+          (mapLayerToggle.textContent = "L"),
+          (mapLayerToggle.title = "Switch to Dark Theme"))
+        : (baseLayer.setVisible(!0),
+          brightLayer.setVisible(!1),
+          (currentMapLayer = "dark"),
+          (mapLayerToggle.textContent = "L"),
+          (mapLayerToggle.title = "Switch to Light Theme")),
+        updateDroneLegendIcons(),
+        updateMarkersAndTracks());
+    }));
+  const militaryPrefixes = [
+      "PUD",
+      "MNT",
+      "ID",
+      "ATAC",
+      "A35",
+      "CNV",
+      "KOSH",
+      "EGVA",
+      "CNV",
+      "HRCN",
+      "ROKT",
+      "GTMO",
+      "TWEE",
+      "EURO",
+      "KAF",
+      "F3",
+      "N/A",
+      "0000",
+      "CHAOS",
+      "PUNISH",
+      "HERK",
+      "BRK",
+      "MAFIA ",
+      "FOOL",
+      "BOBCAT",
+      "KILLER",
+      "SPIK",
+      "ZK",
+      "WAR",
+      "GUN",
+      "ROG",
+      "COBRA",
+      "RAF",
+      "EUFI",
+      "AMBZH",
+      "MIL",
+      "RCH",
+      "QID",
+      "BASS",
+      "LAGR",
+      "NATO",
+      "PAT",
+      "BOM",
+      "B2",
+      "B52",
+      "TEX",
+      "HURK",
+      "CFC",
+      "GAF",
+      "BAF",
+      "HAF",
+      "IAF",
+      "RFF",
+      "F22",
+      "F35",
+      "ZZ",
+      "NAVY",
+      "USAF",
+      "RAF",
+      "RCAF",
+      "ARMY",
+      "HAWK",
+      "F16",
+      "F15",
+      "F22",
+      "13-5",
+      "BOBO",
+      "KENT",
+      "KEEN",
+      "N518",
+      "SHAD",
+      "CARP",
+      "ROGU",
+      "VIPER",
+      "POPER",
+    ],
+    privateRegPatterns = [
+      /^N[0-9A-Z]{1,5}$/i,
+      /^[A-Z]{1,2}-[A-Z]{3,5}$/i,
+      /^RA-\d{4,}$/i,
+      /^9H-[A-Z]{3}$/i,
+      /^CS-[A-Z]{3}$/i,
+      /^OY-[A-Z]{3}$/i,
+    ],
+    airlineLike = /^[A-Z]{2,3}\d{2,4}[A-Z]?$/;
+  function isHelicopter(e) {
+    const t = e.spd_kmh || 0,
+      n = e.alt_m || 0,
+      o = e.callsign && /(H|HELI|HEL|HEMS|MED|RESCUE)/i.test(e.callsign);
+    return t > 0 && t < 260 && n > 0 && n < 3e3 && o;
+  }
+  function isDrone(e) {
+    const t = e.spd_kmh || 0,
+      n = e.alt_m || 0,
+      o = n > 0 && n <= 1200,
+      a = t > 0 && t <= 120,
+      r = !isHelicopter(e);
+    return o && a && r;
+  }
+  function isMilitary(e) {
+    return (
+      !!e.callsign &&
+      militaryPrefixes.some((t) => e.callsign.toUpperCase().startsWith(t))
+    );
+  }
+  function isprivate(e) {
+    return (
+      (!e.callsign || !airlineLike.test(e.callsign)) &&
+      (!(!e.callsign || !privateRegPatterns.some((t) => t.test(e.callsign))) ||
+        !(
+          !e.registration ||
+          !privateRegPatterns.some((t) => t.test(e.registration))
+        ))
+    );
+  }
+  function isPassenger(e) {
+    return !(!e.callsign || !airlineLike.test(e.callsign));
+  }
+  function categorize(e) {
+    return isDrone(e)
+      ? "drone"
+      : isHelicopter(e)
+        ? "helicopter"
+        : isMilitary(e)
+          ? "military"
+          : isPassenger(e)
+            ? "passenger"
+            : isprivate(e)
+              ? "private"
+              : "commercial";
+  }
+  function estimatePassengerCapacity(e) {
+    if (!e.acType) return "unknown";
+    const t = e.acType.toUpperCase();
+    return t.includes("ATR") ||
+      t.includes("DHC") ||
+      t.includes("EMB") ||
+      t.includes("SF34") ||
+      t.includes("BE20")
+      ? "small_passenger"
+      : t.includes("B73") ||
+          t.includes("B74") ||
+          t.includes("B75") ||
+          t.includes("B76") ||
+          t.includes("B77") ||
+          t.includes("B78") ||
+          t.includes("A31") ||
+          t.includes("A32") ||
+          t.includes("A33") ||
+          t.includes("A34") ||
+          t.includes("A35") ||
+          t.includes("A38")
+        ? "large_passenger"
+        : "unknown";
+  }
+  function spectrumColorForAltitudeMeters(e) {
+    return sampleSpectrum(normalize(e || 0, 0, 17e3));
+  }
+  function sampleSpectrum(e) {
+    const t = [
+      "#FFA500",
+      "#FFFF00",
+      "#00FF00",
+      "#0000FF",
+      "#4B0082",
+      "#800080",
+    ];
+    if (e <= 0) return t[0];
+    if (e >= 1) return t[t.length - 1];
+    const n = 1 / (t.length - 1),
+      o = Math.floor(e / n);
+    return lerpColor(t[o], t[o + 1], (e - o * n) / n);
+  }
+  function getSmoothedColor(e, t) {
+    const n = lerpColor(lastColorByHex.get(e) || t, t, 0.25);
+    return (lastColorByHex.set(e, n), n);
+  }
+  function getDroneIconColor(e) {
+    return "dark" === currentMapLayer ? "#0101010" : "#fffffff";
+  }
+  function featureForFlight(e) {
+    const t = categorize(e),
+      n = new ol.geom.Point(ol.proj.fromLonLat([e.lon, e.lat]));
+    let o;
+    if ("drone" === t)
+      o = new ol.style.Style({
+        image: new ol.style.Icon({
+          src: DRONE_SVG,
+          scale: 1,
+          color: getDroneIconColor(),
+        }),
+      });
+    else if ("helicopter" === t)
+      o = new ol.style.Style({
+        image: new ol.style.Icon({ src: HELI_SVG, scale: 1 }),
+      });
+    else if ("military" === t)
+      o = new ol.style.Style({
+        image: new ol.style.Icon({
+          src: FIGHTER_SVG,
+          scale: 1,
+          color: COLORS.military,
+          rotation: ((e.heading || 0) * Math.PI) / 180,
+        }),
+      });
+    else {
+      const t = spectrumColorForAltitudeMeters(
+          (null != e.agl_m ? e.agl_m : e.alt_m) || 0,
+        ),
+        n = getSmoothedColor(e.hex, t),
+        a = estimatePassengerCapacity(e);
+      o =
+        "small_prop" === a
+          ? new ol.style.Style({
+              image: new ol.style.Icon({
+                src: AIRPLANE_PROP_SVG,
+                scale: 1,
+                color: n,
+                rotation: ((e.heading || 0) * Math.PI) / 180,
+              }),
+            })
+          : "small_passenger" === a
+            ? new ol.style.Style({
+                image: new ol.style.Icon({
+                  src: AIRPLANE_SMALL_SVG,
+                  scale: 1,
+                  color: n,
+                  rotation: ((e.heading || 0) * Math.PI) / 180,
+                }),
+              })
+            : new ol.style.Style({
+                image: new ol.style.Icon({
+                  src: AIRPLANE_SVG,
+                  scale: 1,
+                  color: n,
+                  rotation: ((e.heading || 0) * Math.PI) / 180,
+                }),
+              });
+    }
+    const a = new ol.Feature({ geometry: n, hex: e.hex, data: e, category: t });
+    return (a.setStyle(o), a);
+  }
+  function addToTrack(e) {
+    tracksByHex.has(e.hex) || tracksByHex.set(e.hex, []);
+    const t = tracksByHex.get(e.hex);
+    (t.push({ lon: e.lon, lat: e.lat, alt_m: e.alt_m || 0, ts: e.ts }),
+      t.length > 500 && t.shift());
+  }
+  function drawTrack(e, t) {
+    const n = tracksByHex.get(e) || [];
+    if (n.length < 2) return null;
+    const o = [];
+    for (let a = 0; a < n.length - 1; a++) {
+      const r = new ol.geom.LineString([
+        ol.proj.fromLonLat([n[a].lon, n[a].lat]),
+        ol.proj.fromLonLat([n[a + 1].lon, n[a + 1].lat]),
+      ]);
+      let l;
+      l =
+        "drone" === t
+          ? getDroneIconColor()
+          : "military" === t
+            ? COLORS.military
+            : spectrumColorForAltitudeMeters(n[a].alt_m);
+      const s = new ol.Feature({ geometry: r, hex: e });
+      (s.setStyle(
+        new ol.style.Style({
+          stroke: new ol.style.Stroke({ color: l, width: 3 }),
+        }),
+      ),
+        o.push(s));
+    }
+    return o;
+  }
+  function updateMarkersAndTracks() {
+    if (0 === sortedHexes.length) return;
+    const e = makeGroupLabels(
+        Math.max(lastFullCount || 0, sortedHexes.length),
+      ).indexOf(currentGroup),
+      t = e >= 0 ? 26e3 * e : 0,
+      n = t + 26e3,
+      o = sortedHexes.slice(t, n),
+      a = new Set(o),
+      r = autoUpdateSwitch && autoUpdateSwitch.checked ? 5e3 : 3e3;
+    for (const e of o) {
+      const t = flightsByHex.get(e);
+      if (t)
+        if (animatedFeatures.has(e)) {
+          (animatedFeatures.get(e).feature.set("data", t),
+            setFlightTarget(t, r),
+            addToTrack(t));
+        } else setFlightTarget(t, r);
+    }
+    for (const [e, t] of Array.from(animatedFeatures.entries()))
+      if (!a.has(e)) {
+        try {
+          markerLayer.getSource().removeFeature(t.feature);
+        } catch (e) {}
+        animatedFeatures.delete(e);
+      }
+    (animatePositions(), trackLayer.getSource().clear());
+    for (const e of selectedFlights) {
+      const t = flightsByHex.get(e);
+      if (!t) continue;
+      const n = drawTrack(e, categorize(t));
+      n && n.forEach((e) => trackLayer.getSource().addFeature(e));
+    }
+  }
+  function updateInfoTables(e) {
+    const t = {
+        passenger: 0,
+        commercial: 0,
+        private: 0,
+        helicopter: 0,
+        military: 0,
+        drone: 0,
+      },
+      n = [];
+    for (const o of e) {
+      const e = categorize(o);
+      (null != t[e] ? t[e]++ : t.commercial++,
+        "drone" !== e || o.callsign || o.registration || n.push(o));
+    }
+    ((totalFlightsEl.textContent = lastFullCount || e.length),
+      (countPassengerEl.textContent = t.passenger),
+      (countCommercialEl.textContent = t.commercial),
+      (countprivateEl.textContent = t.private),
+      (countHeliEl.textContent = t.helicopter),
+      (countMilitaryEl.textContent = t.military),
+      (countDronesEl.textContent = t.drone));
+    const o = document.querySelector("#unidentifiedDroneTable tbody");
+    ((o.innerHTML = ""),
+      n
+        .sort((e, t) => e.hex.localeCompare(t.hex))
+        .slice(0, 200)
+        .forEach((e) => {
+          const t = document.createElement("tr"),
+            n = null != e.agl_m ? e.agl_m : "—";
+          ((t.innerHTML = `<td>${e.hex}</td><td>${e.lat.toFixed(2)}</td><td>${e.lon.toFixed(3)}</td><td>${n}</td><td>${e.spd_kmh ?? "—"}</td>`),
+            o.appendChild(t));
+        }));
+  }
+  function sleep(e) {
+    return new Promise((t) => setTimeout(t, e));
+  }
+  async function resolveCountry(e, t) {
+    const n = `${e.toFixed(2)},${t.toFixed(3)}`;
+    if (countryCache.has(n)) return countryCache.get(n);
+    const o = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${e}&lon=${t}&zoom=1`,
+      a = await fetch(o, { headers: { Accept: "application/json" } });
+    if (!a.ok) return null;
+    const r = await a.json(),
+      l =
+        (r &&
+          r.address &&
+          (r.address.country || r.address.country_code || r.display_name)) ||
+        null;
+    return (countryCache.set(n, l), await sleep(1100), l);
+  }
+  async function updateDroneByCountry(e) {
+    const t = document.querySelector("#droneByCountryTable tbody");
+    t.innerHTML = "";
+    const n = e
+        .filter((e) => "drone" === categorize(e))
+        .sort((e, t) => e.hex.localeCompare(t.hex)),
+      o = new Map();
+    if (!resolveCountrySwitch.checked) return;
+    for (const e of n) {
+      const t = (await resolveCountry(e.lat, e.lon)) || "Unknown";
+      (o.has(t) || o.set(t, []), o.get(t).push(e));
+    }
+    const a = Array.from(o.keys()).sort((e, t) => e.localeCompare(t));
+    for (const e of a)
+      for (const n of o.get(e)) {
+        const o = document.createElement("tr"),
+          a = null != n.agl_m ? n.agl_m : "—";
+        ((o.innerHTML = `<td>${e}</td><td>${n.hex}</td><td>${n.lat.toFixed(2)}</td><td>${n.lon.toFixed(3)}</td><td>${a}</td><td>${n.spd_kmh ?? "—"}</td>`),
+          t.appendChild(o));
+      }
+  }
+  async function updateFlightGroupsByCountry(e) {
+    const t = document.querySelector("#flightGroupsByCountryTable tbody");
+    t.innerHTML = "";
+    const n = new Map();
+    for (const t of e) {
+      const e = (await resolveCountry(t.lat, t.lon)) || "Unknown";
+      n.has(e) || n.set(e, new Map());
+      const o = currentGroup;
+      (n.get(e).has(o) || n.get(e).set(o, 0),
+        n.get(e).set(o, n.get(e).get(o) + 1));
+    }
+    const o = Array.from(n.keys()).sort();
+    for (const e of o) {
+      const o = n.get(e);
+      for (const [n, a] of o) {
+        const o = document.createElement("tr"),
+          r = `<button class="btn btn-sm btn-outline-primary" onclick="viewGroupDetails('${e}', '${n}')">View</button>`;
+        ((o.innerHTML = `<td>${e}</td><td>${n}</td><td>${a}</td><td>${r}</td>`),
+          t.appendChild(o));
+      }
+    }
+  }
+  function viewGroupDetails(e, t) {
+    const n = document.querySelector("#selectedGroupTable tbody");
+    n.innerHTML = "";
+    const o = Array.from(flightsByHex.values()).filter(
+      (t) =>
+        (countryCache.get(`${t.lat.toFixed(2)},${t.lon.toFixed(3)}`) ||
+          "Unknown") === e,
+    );
+    for (const t of o) {
+      const o = document.createElement("tr"),
+        a = t.callsign || t.registration || t.hex,
+        r = t.acType || "Unknown",
+        l = categorize(t);
+      ((o.innerHTML = `<td>${a}</td><td>${r}</td><td>${e}</td><td><span class="badge badge-outline">${l.toUpperCase()}</span></td>`),
+        n.appendChild(o));
+    }
+    document.getElementById("selectedGroupDetails").style.display = "block";
+  }
+  function makeFR24Link(e) {
+    ((e.callsign || "").replace(/\s+/g, ""), e.hex);
+    return `https://www.flightradar24.com/${e.callsign}/3d`;
+  }
+  function toggleFlightSelection(e) {
+    (selectedFlights.has(e)
+      ? selectedFlights.delete(e)
+      : selectedFlights.add(e),
+      updateSelectedFlightsDisplay());
+  }
+  function updateSelectedFlightsDisplay() {
+    (selectedFlightLayer.getSource().clear(),
+      (document.getElementById("selectedFlightsCount").textContent =
+        selectedFlights.size));
+    for (const e of selectedFlights) {
+      const t = flightsByHex.get(e);
+      if (!t) continue;
+      drawEnhancedTrack(t.hex, categorize(t)).forEach((e) =>
+        selectedFlightLayer.getSource().addFeature(e),
+      );
+    }
+  }
+  function clearAllSelections() {
+    (selectedFlights.clear(), updateSelectedFlightsDisplay());
+  }
+  function drawEnhancedTrack(e, t) {
+    const n = tracksByHex.get(e) || [];
+    if (n.length < 2) return [];
+    const o = [],
+      a = n.map((e) => ol.proj.fromLonLat([e.lon, e.lat])),
+      r = new ol.geom.LineString(a);
+    let l;
+    l =
+      "drone" === t
+        ? getDroneIconColor()
+        : "military" === t
+          ? COLORS.military
+          : spectrumColorForAltitudeMeters(n[n.length - 1]?.alt_m || 0);
+    const s = new ol.Feature({ geometry: r, hex: e });
+    return (
+      s.setStyle(
+        new ol.style.Style({
+          stroke: new ol.style.Stroke({ color: l, width: 3, lineDash: [9, 6] }),
+        }),
+      ),
+      o.push(s),
+      o
+    );
+  }
+  async function refresh() {
+    const e = boundsFromView();
+    let t;
+    try {
+      t = await fetchFR24(e, useProxySwitch.checked);
+    } catch (e) {
+      return;
+    }
+    const n = parseFR24(t);
+    lastFullCount = n.fullCount || lastFullCount;
+    for (const e of n.flights) flightsByHex.set(e.hex, e);
+    ((sortedHexes = Array.from(flightsByHex.keys()).sort((e, t) =>
+      e.localeCompare(t),
+    )),
+      setGroupOptions(lastFullCount || sortedHexes.length),
+      updateMarkersAndTracks(),
+      updateInfoTables(n.flights),
+      resolveCountrySwitch.checked &&
+        (updateDroneByCountry(n.flights),
+        updateFlightGroupsByCountry(n.flights)),
+      computeAGLForDrones(n.flights).then(() => {
+        (updateMarkersAndTracks(), updateInfoTables(n.flights));
+      }));
+  }
+  function startAutoUpdate() {
+    (autoUpdateTimer && clearInterval(autoUpdateTimer),
+      (autoUpdateTimer = setInterval(refresh, 3e3)));
+  }
+  function stopAutoUpdate() {
+    autoUpdateTimer &&
+      (clearInterval(autoUpdateTimer), (autoUpdateTimer = null));
+  }
+  async function getElevation(e, t) {
+    const n = `${e.toFixed(2)},${t.toFixed(3)}`;
+    if (elevationCache.has(n)) return elevationCache.get(n);
+    try {
+      const o = `https://api.open-elevation.com/api/v1/lookup?locations=${e},${t}`,
+        a = await fetch(o, { headers: { Accept: "application/json" } });
+      if (!a.ok) return null;
+      const r = await a.json(),
+        l =
+          r &&
+          r.results &&
+          r.results[0] &&
+          "number" == typeof r.results[0].elevation
+            ? Math.round(r.results[0].elevation)
+            : null;
+      return (
+        elevationCache.set(n, l),
+        await new Promise((e) => setTimeout(e, 1200)),
+        l
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+  async function computeAGLForDrones(e) {
+    if (!elevationQueueBusy) {
+      elevationQueueBusy = !0;
+      try {
+        const t = e.filter(
+          (e) => "drone" === categorize(e) || "helicopter" !== categorize(e),
+        );
+        let n = 0;
+        for (const e of t) {
+          if (null != e.agl_m) continue;
+          const t = await getElevation(e.lat, e.lon);
+          if (
+            (null != t &&
+              null != e.alt_m &&
+              (e.agl_m = Math.max(0, e.alt_m - t)),
+            n++,
+            n >= 5)
+          )
+            break;
+        }
+      } finally {
+        elevationQueueBusy = !1;
+      }
+    }
+  }
+  (map.on("singleclick", (e) => {
+    map.forEachFeatureAtPixel(e.pixel, (t, n) => {
+      if (n !== markerLayer) return;
+      const o = t.get("data");
+      if (!o) return;
+      selectedFlights.has(o.hex)
+        ? selectedFlights.delete(o.hex)
+        : selectedFlights.add(o.hex);
+      const a = categorize(o),
+        r = o.callsign || o.registration || o.hex,
+        l = null != o.agl_m ? o.agl_m : null,
+        s = makeFR24Link(o),
+        i = selectedFlights.has(o.hex);
+      ((popupContent.innerHTML = `<div class="d-flex justify-content-between align-items-center"><strong>${r}</strong><span class="badge badge-outline">${a.toUpperCase()}</span></div><div class="small-muted">Hex: ${o.hex}${o.acType ? " • Type: " + o.acType : ""}</div><div>Lat: ${o.lat.toFixed(4)} • Lon: ${o.lon.toFixed(4)}</div><div>Alt (MSL): ${null != o.alt_m ? o.alt_m + " m (" + metersToFeet(o.alt_m) + " ft)" : "—"}</div>${"drone" === a ? `<div>Alt(AGL):${null != l ? l + " m" : "…"}</div>` : ""}<div>Speed: ${null != o.spd_kmh ? o.spd_kmh + " km/h" : "—"}</div><div>Heading: ${null != o.heading ? o.heading + "°" : "—"}</div><div class="mt-1">FR24 3D: <a class="link-warning" href="${s}" target="_blank" rel="noopener">${s}</a></div>${"drone" === a ? '<div class="small-muted mt-1">Control links(est.):RC 2.4/5.8 GHz or SATCOM;telemetry 433/868/915 MHz;downlink varies by platform.</div>' : ""}<div class="mt-1"><button class="btn btn-sm ${i ? "btn-success" : "btn-outline-success"}" onclick="toggleFlightSelection('${o.hex}')">${i ? "✓ Selected" : "Select Flight"}</button></div><div class="small-muted mt-1">Click map to close. Track shown with altitude spectrum.</div>`),
+        (popupEl.style.display = "block"),
+        popup.setPosition(e.coordinate),
+        updateSelectedFlightsDisplay());
+    });
+  }),
+    refreshBtn.addEventListener("click", refresh),
+    autoUpdateSwitch.addEventListener("change", () => {
+      autoUpdateSwitch.checked ? startAutoUpdate() : stopAutoUpdate();
+    }),
+    groupSelect.addEventListener("change", (e) => {
+      ((currentGroup = e.target.value), updateMarkersAndTracks());
+    }),
+    resolveCountrySwitch.addEventListener("change", () => {
+      updateDroneByCountry(Array.from(flightsByHex.values()));
+    }));
+  const animatedFeatures = new Map();
+  let animationRunning = !1;
+  function lerp(e, t, n) {
+    return e + (t - e) * n;
+  }
+  function lerpAngle(e, t, n) {
+    if (null == e) return t ?? 0;
+    if (null == t) return e ?? 0;
+    let o = ((e % 360) + 360) % 360,
+      a = (((t % 360) + 360) % 360) - o;
+    return (
+      a > 180 && (a -= 360),
+      a < -180 && (a += 360),
+      (o + a * n + 360) % 360
+    );
+  }
+  function setFlightTarget(e, t) {
+    const n = e.hex,
+      o = {
+        lon: e.lon,
+        lat: e.lat,
+        heading: null != e.heading ? e.heading : null,
+      };
+    if (animatedFeatures.has(n)) {
+      const a = animatedFeatures.get(n);
+      if (!a.from)
+        try {
+          const t = a.feature.getGeometry().getCoordinates(),
+            [n, o] = ol.proj.toLonLat(t);
+          a.from = {
+            lon: n,
+            lat: o,
+            heading: a.to ? a.to.heading : e.heading || 0,
+          };
+        } catch (e) {
+          a.from = { lon: o.lon, lat: o.lat, heading: o.heading || 0 };
+        }
+      const r = Date.now(),
+        l = Math.max(0, r - (a.startTs || r)),
+        s = Math.min(1, t > 0 ? l / t : 1),
+        i = lerp(a.from.lon, a.to.lon, s),
+        c = lerp(a.from.lat, a.to.lat, s),
+        u = lerpAngle(
+          a.from.heading ?? o.heading ?? 0,
+          a.to.heading ?? o.heading ?? 0,
+          s,
+        );
+      ((a.from = { lon: i, lat: c, heading: u }),
+        (a.to = o),
+        (a.startTs = Date.now()),
+        (a.duration = t));
+    } else {
+      const a = featureForFlight(e);
+      (a.setGeometry(new ol.geom.Point(ol.proj.fromLonLat([o.lon, o.lat]))),
+        markerLayer.getSource().addFeature(a),
+        animatedFeatures.set(n, {
+          feature: a,
+          from: { lon: o.lon, lat: o.lat, heading: o.heading ?? 0 },
+          to: o,
+          startTs: Date.now(),
+          duration: t,
+        }),
+        addToTrack(e));
+    }
+  }
+  function animatePositions() {
+    animationRunning ||
+      ((animationRunning = !0),
+      (function e() {
+        const t = Date.now();
+        let n = !1;
+        const o = autoUpdateSwitch && autoUpdateSwitch.checked ? 5e3 : 3e3;
+        for (const [e, a] of animatedFeatures) {
+          const e = Math.max(1, a.duration || o),
+            r = t - (a.startTs || t);
+          let l = Math.max(0, Math.min(1, r / e));
+          const s = lerp(a.from.lon, a.to.lon, l),
+            i = lerp(a.from.lat, a.to.lat, l),
+            c = lerpAngle(a.from.heading ?? 0, a.to.heading ?? 0, l);
+          a.feature.getGeometry().setCoordinates(ol.proj.fromLonLat([s, i]));
+          try {
+            const e = a.feature.getStyle();
+            if (e && e.getImage && "function" == typeof e.getImage) {
+              const t = e.getImage();
+              t && "function" == typeof t.setRotation
+                ? (t.setRotation(((c || 0) * Math.PI) / 180),
+                  a.feature.changed())
+                : a.feature.setStyle(
+                    featureForFlight(a.feature.get("data")).getStyle(),
+                  );
+            }
+          } catch (e) {}
+          l < 1
+            ? (n = !0)
+            : ((a.from = {
+                lon: a.to.lon,
+                lat: a.to.lat,
+                heading: a.to.heading ?? 0,
+              }),
+              (a.startTs = t),
+              (a.duration = o));
+        }
+        n ? requestAnimationFrame(e) : (animationRunning = !1);
+      })());
+  }
+  function metersToFeet(e) {
+    return Math.round(Number(e) / 0.3048);
+  }
+  async function getAltitudeColorForFeet(e) {
+    return (
+      (null == e || isNaN(e)) && (e = 0),
+      (e = Math.max(0, Math.min(5e4, Number(e)))) <= 7e3
+        ? "#FFA500"
+        : e <= 14e3
+          ? "#FFFF00"
+          : e <= 21e3
+            ? "#00FF00"
+            : e <= 28e3
+              ? "#0000FF"
+              : e <= 35e3
+                ? "#FF69B4"
+                : e <= 42e3
+                  ? "#3300CC"
+                  : e <= 49e3
+                    ? "#957DAD"
+                    : void 0
+    );
+  }
+  function identifyFlightType(e) {
+    return e.gs < 100 ||
+      e.velocity < 100 ||
+      e.alt_baro < 5e3 ||
+      ["DJI", "Mq", "Bayraktar", "Mavic", "shahed"].some(
+        (t) => e.model?.includes(t) || e.t?.includes(t),
+      )
+      ? "drone"
+      : (!e.callsign && !e.flight) ||
+          ("Unknown" === e.callsign && "Unknown" === e.flight)
+        ? "unknown"
+        : "military" === e.type &&
+            ["Eurofighter", "F-16", "F-35", "F-22", "Su-27", "MiG-29"].some(
+              (t) => e.t?.includes(t) || e.model?.includes(t),
+            )
+          ? "fighter"
+          : e.category?.includes("Naval") ||
+              e.t?.includes("P-8") ||
+              e.t?.includes("Poseidon")
+            ? "navy"
+            : e.hex?.startsWith("7B") || e.r?.startsWith("EP-")
+              ? "iranian"
+              : "military" === e.type
+                ? "military"
+                : "civilian";
+  }
+  function getFlightColor(e) {
+    switch (identifyFlightType(e)) {
+      case "drone":
+        return "black";
+      case "unknown":
+        return "yellow";
+      case "fighter":
+        return "orange";
+      case "navy":
+        return "lightblue";
+      case "iranian":
+        return "green";
+      case "military":
+        return "red";
+      default:
+        return "blue";
+    }
+  }
+  ((window.toggleFlightSelection = toggleFlightSelection),
+    (window.viewGroupDetails = viewGroupDetails),
+    (window.clearAllSelections = clearAllSelections),
+    setGroupOptions(),
+    updateDroneLegendIcons(),
+    refresh(),
+    startAutoUpdate());
+});
