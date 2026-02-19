@@ -1,11 +1,8 @@
-# WWW.CINASCORP.COM
-<img width="2560" height="1689" alt="cinas" src="https://github.com/user-attachments/assets/4b1fa808-95d4-4570-ab09-60b2596dabca" />
 # TAR-Q 
 ## Distributed Passive Coherent Location (PCL) via HTTP/3 Stream Interferometry
 
 **Project Documentation & Theoretical Framework**  
 **Principal Investigator:** Cinascorp  
-**Date:** November 2025  
 **Subject:** Implementation of Browser-Based Quantum-Like Radar Systems
 
 ## 1. Abstract
@@ -87,10 +84,10 @@ $$
 ### 4.2. Parallel Processing Architecture
 
 ```
-[Main Thread] ──Message──► [Worker 1: Blob Analysis]
-                           [Worker 2: Geodesic Math]
-                           [Worker 3: WebGL/GLTF Rendering]
-              ◄──Result─── [Aggregator]
+[Main Thread]──Message──►[Worker 1: Blob Analysis]
+                        [Worker 2: Geodesic Math]
+                      [Worker 3: WebGL/GLTF Rendering]
+      ◄──Result─── [Aggregator]
 ```
 ## 5. Implementation (Source Code Extract)
 
